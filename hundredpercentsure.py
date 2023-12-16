@@ -24,6 +24,14 @@ def fetch_display_name(lat, lon):
             return response['address']['building']
         elif "suburb" in response['address']:
             return response['address']['suburb']
+        elif "quarter" in response['address']:
+            return response['address']['quarter']
+        elif "hamlet" in response['address']:
+            return response['address']['hamlet']
+        elif "village" in response['address']:
+            return response['address']['village']
+        elif "town" in response['address']:
+            return response['address']['town']
         else:
             return response['display_name']
     except Exception as e:

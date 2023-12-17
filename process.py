@@ -1,15 +1,23 @@
 import pandas as pd
-
-
 csv_file_path = '1-safe.csv'
 
 df = pd.read_csv(csv_file_path)
 
-grouped_display_names = df.groupby('GroupID')['Display Name'].unique()
+passenger_df = df[df['Di2'] == 1]
 
+passenger_roads = {}
 
-# Iterating over each group and printing the formatted output with spaces replaced by underscores
-for group_id, names in grouped_display_names.items():
-    names_with_underscores = [name.replace(" ", "_") for name in names]
-    formatted_output = f"{len(names)} {' '.join(names_with_underscores)}"
-    print(formatted_output)
+for index, row in passenger_df.iterrows():
+    passenger_id = row['PassengerId']
+    display_name = str(row['Display Name'])
+    
+    if passenger_id in passenger_roads:
+        passenger_roads[passenger_id].add(display_name.replace(' ', '_'))
+    else:
+        passenger_roads[passenger_id] = {display_name.replace(' ', '_')}
+
+# Write the results to the output.txt file
+with open('output.txt', 'w') as output_file:
+    for passenger_id, roads_set in passenger_roads.items():
+        roads_string = ' '.join(roads_set)
+        output_file.write(f"{len(roads_set)} {roads_string}\n")

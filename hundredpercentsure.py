@@ -8,9 +8,30 @@ csv_file_path = '1.csv'
 # Read the CSV file
 df = pd.read_csv(csv_file_path)
 
-df = df.loc[(df['Di1'] == 1) & (df['Di2'] == 1)]
+# Add a new column 'PassengerID' to identify passengers
+df['PassengerId'] = -1  # Initialize PassengerID with -1
 
-print(df)
+passenger_count = 0
+current_passenger_id = -1
+
+for index, row in df.iterrows():
+    if row['Di2'] == 1:
+        if df.at[index - 1, 'Di2'] == 0:  # New passenger
+            passenger_count += 1
+            current_passenger_id = passenger_count
+    df.at[index, 'PassengerId'] = current_passenger_id
+
+# Function to create a Time column and filter based on passenger duration
+df['Time'] = pd.to_datetime(df['DeviceDateTime'], format='%M:%S.%f')
+group_times = df.groupby('PassengerId').agg({'Time': ['min', 'max']})
+
+group_times['Duration'] = (group_times['Time']['max'] - group_times['Time']['min']).dt.total_seconds()
+threshold_seconds = 60
+valid_passenger_ids = group_times[group_times['Duration'] >= threshold_seconds].index
+
+df = df[df['PassengerId'].isin(valid_passenger_ids)]
+
+# df = df.loc[(df['Di1'] == 1) & (df['Di2'] == 1)]
 
 # Function to make an HTTP request and return the display name
 def fetch_display_name(lat, lon):

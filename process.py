@@ -1,6 +1,4 @@
 import pandas as pd
-
-# Replace this with the path to your CSV file
 csv_file_path = '1-safe.csv'
 
 df = pd.read_csv(csv_file_path)

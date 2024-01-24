@@ -1,3 +1,4 @@
+```
 [out:json];
 // The public street network
 way["highway"~"^(trunk|primary|secondary|tertiary|unclassified|residential)$"](42.6290946,21.1066198,42.6969650,21.2136267)->.streets;
@@ -16,3 +17,5 @@ foreach .connections->.connection(
 );
 
 .intersections out geom;
+
+```

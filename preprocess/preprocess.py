@@ -42,41 +42,48 @@ df.to_csv('1-grupet.csv', index=False)
 # Function to make an HTTP request and return the display name
 def fetch_display_name(lat, lon):
     try:
+        print(f"http://localhost:8080/reverse?lat={lat}&lon={lon}&format=json&osm_type=W&layer=address&zoom=17&addressdetails=1")
         response = requests.get(f"http://localhost:8080/reverse?lat={lat}&lon={lon}&format=json").json()
         if "address" not in response:
-            return response['display_name']
+            return [response['display_name'], response['osm_id'], response['osm_type']]
         elif "road" in response['address']:
-            return response['address']['road']
+            return [response['address']['road'], response['osm_id'], response['osm_type']]
         elif "building" in response['address']:
-            return response['address']['building']
+            return [response['address']['building'], response['osm_id'], response['osm_type']]
         elif "suburb" in response['address']:
-            return response['address']['suburb']
+            return [response['address']['suburb'], response['osm_id'], response['osm_type']]
         elif "quarter" in response['address']:
-            return response['address']['quarter']
+            return [response['address']['quarter'], response['osm_id'], response['osm_type']]
         elif "hamlet" in response['address']:
-            return response['address']['hamlet']
+            return [response['address']['hamlet'], response['osm_id'], response['osm_type']]
         elif "village" in response['address']:
-            return response['address']['village']
+            return [response['address']['village'], response['osm_id'], response['osm_type']]
         elif "town" in response['address']:
-            return response['address']['town']
+            return [response['address']['town'], response['osm_id'], response['osm_type']]
         else:
-            return response['display_name']
+            return [response['display_name'], response['osm_id'], response['osm_type']]
     except Exception as e:
         print(f"Error fetching data for lat: {lat}, lon: {lon} - {e}")
         return None
 
 # Function to handle each row
 def process_row(row):
-    display_name = fetch_display_name(row['Latitude'], row['Longitute'])
-    return display_name
+    [display_name, osmid, osmtype] = fetch_display_name(row['Latitude'], row['Longitute'])
+    print([display_name, osmid, osmtype])
+    return [display_name, osmid, osmtype]
 
 # Using ThreadPoolExecutor to process rows in parallel
 with ThreadPoolExecutor() as executor:
     # Map process_row function to each row
     display_names = list(executor.map(process_row, [row for _, row in df.iterrows()]))
+    print(process_row)
+
 
 # Add the display names to the DataFrame
 df['Display Name'] = display_names
+df['osm_id'] = df['Display Name'].apply(lambda x: x[1])
+df['osm_type'] = df['Display Name'].apply(lambda x: x[2])
+df['Display Name'] = df['Display Name'].apply(lambda x: x[0])
 
 # Now the DataFrame has an additional column with display names
 print(df)

@@ -31,9 +31,10 @@ df_merged = pd.merge(time_grouped, df, on='new_group_id', how='left')
 total_duration = df_merged['total_duration'].sum()
 unique_segments = df_merged['full_road_name'].nunique()
 unique_intersections = pd.concat([df_merged['start'], df_merged['end']]).nunique()
+nr_shtigjeve = df_merged['GroupID'].nunique()
 
 
-print(f"{total_duration} {unique_intersections} {unique_segments} nr-shtigjeve 100")
+print(f"{total_duration} {unique_intersections} {unique_segments} {nr_shtigjeve} 100")
 for index, row in df_merged.iterrows():
     formatted_output = f"{row['start']} {row['end']} {row['full_road_name']} {row['total_duration']}"
     print(formatted_output)

@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime
 
 import pandas as pd
 
@@ -7,8 +7,7 @@ df = pd.read_csv(csv_file_path)
 
 
 def convert_to_timedelta(time_str):
-    minutes, seconds = time_str.split(':')
-    return timedelta(minutes=int(minutes), seconds=float(seconds))
+    return datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
 
 df['DeviceDateTime'] = df['DeviceDateTime'].apply(convert_to_timedelta)
 # df['DeviceDateTime'] = pd.to_timedelta(df['DeviceDateTime'])

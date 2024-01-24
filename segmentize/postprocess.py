@@ -3,7 +3,7 @@ import psycopg2
 from psycopg2.extensions import AsIs
 
 
-csv_file_path = '../preprocess/1-final.csv'
+csv_file_path = '../preprocess/7-final.csv'
 df = pd.read_csv(csv_file_path)
 
 
@@ -100,4 +100,4 @@ concat['end'] = concat['end'].astype(int)
 
 concat['new_group_id'] = (concat['full_road_name'] != concat['full_road_name'].shift()).cumsum()
 
-concat.to_csv('1-processed.csv', index=False)
+concat.to_csv('7-processed.csv', index=False)

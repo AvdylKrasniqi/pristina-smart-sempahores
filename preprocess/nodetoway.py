@@ -5,7 +5,7 @@ import overpass
 from difflib import SequenceMatcher
 
 # Replace this with the path to your CSV file
-csv_file_path = '1-safe.csv'
+csv_file_path = '7-safe.csv'
 
 # Read the CSV file
 df = pd.read_csv(csv_file_path)
@@ -87,4 +87,4 @@ df['Display Name'] = df['Display Name'].apply(lambda x: x[0])
 print(df)
 
 # Optionally, save the updated DataFrame to a new CSV file
-df.to_csv('1-final.csv', index=False)
+df.to_csv('7-final.csv', index=False)

@@ -3,7 +3,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 # Replace this with the path to your CSV file
-csv_file_path = '1.csv'
+csv_file_path = '7.csv'
 
 # Read the CSV file
 df = pd.read_csv(csv_file_path)
@@ -24,7 +24,7 @@ df.drop('Di2_Shifted', axis=1, inplace=True)
 
 print(df)
 
-df['Time'] = pd.to_datetime(df['DeviceDateTime'], format='%M:%S.%f')
+df['Time'] = pd.to_datetime(df['DeviceDateTime'], format='%Y-%m-%d %H:%M:%S.%f')
 group_times = df.groupby('GroupID').agg({'Time': ['min', 'max']})
 
 group_times['Duration'] = (group_times['Time']['max'] - group_times['Time']['min']).dt.total_seconds()
@@ -37,7 +37,7 @@ df = df[df['GroupID'].isin(valid_groups)]
 
 df.drop('Time', axis=1, inplace=True)
 
-df.to_csv('1-grupet.csv', index=False)
+df.to_csv('7-grupet.csv', index=False)
 
 # Function to make an HTTP request and return the display name
 def fetch_display_name(lat, lon):
@@ -89,4 +89,4 @@ df['Display Name'] = df['Display Name'].apply(lambda x: x[0])
 print(df)
 
 # Optionally, save the updated DataFrame to a new CSV file
-df.to_csv('1-safe.csv', index=False)
+df.to_csv('7-safe.csv', index=False)

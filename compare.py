@@ -24,5 +24,5 @@ def compare_csv_column(file1, file2, column_name):
         return f"An error occurred: {e}"
 
 # Example usage
-result = compare_csv_column('1-safe.csv', '1-processed.csv', 'Display Name')
+result = compare_csv_column('7-safe.csv', '7-processed.csv', 'Display Name')
 print(result)

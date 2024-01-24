@@ -1,4 +1,4 @@
-DeviceDateTime,Longitute,Latitude,Speed,Di1,Di2,Di3,GroupID,Display Name,osm_id,osm_type
+DeviceDateTime,Longitude,Latitude,Speed,Di1,Di2,Di3,GroupID,Display Name,osm_id,osm_type
 32:03.0,21.170107,42.660053,0,1,1,1,1.0,Rrustem Statovci,4419892106,node
 32:13.0,21.170283,42.660023,18,1,1,1,1.0,Rrustem Statovci,4419892106,node
 32:14.0,21.170348,42.66,22,1,1,0,1.0,Rrustem Statovci,4419892106,node

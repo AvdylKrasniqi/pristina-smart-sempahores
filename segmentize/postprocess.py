@@ -25,7 +25,11 @@ def getClosestSegmentByCoordsAndOsmId():
     data = []
 
     for i in range(len(df)):
-        data.append((str(df.loc[i, 'Latitude']), str(df.loc[i, 'Longitude']), str(df.loc[i, 'osm_id'])))
+        try:
+            print(df.loc[i])
+            data.append((str(df.loc[i, 'Latitude']), str(df.loc[i, 'Longitude']), str(df.loc[i, 'osm_id'])))
+        except Exception as e:
+            print(e)
     mystr = ', '.join(['(' + item[0] + ',' + item[1] + ',' + item[2] + ')' for item in data])
     query = '''with helper as (
     select * from (

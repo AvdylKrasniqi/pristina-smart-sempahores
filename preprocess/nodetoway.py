@@ -65,7 +65,7 @@ def process_row(row):
     if(row['osm_type'] == 'way'):
         return [row['Display Name'], row['osm_id'], row['osm_type']]
     else:
-        result = fetch_display_name(row['Latitude'], row['Longitute'], row['Display Name'])
+        result = fetch_display_name(row['Latitude'], row['Longitude'], row['Display Name'])
         if result is not None:
             [display_name, osmid, osmtype] = result
             return [display_name, osmid, osmtype]

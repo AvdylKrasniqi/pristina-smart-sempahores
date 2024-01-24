@@ -68,7 +68,7 @@ def fetch_display_name(lat, lon):
 
 # Function to handle each row
 def process_row(row):
-    [display_name, osmid, osmtype] = fetch_display_name(row['Latitude'], row['Longitute'])
+    [display_name, osmid, osmtype] = fetch_display_name(row['Latitude'], row['Longitude'])
     print([display_name, osmid, osmtype])
     return [display_name, osmid, osmtype]
 

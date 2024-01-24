@@ -1,0 +1,8 @@
+.env
+/pgdata/
+/overpass/
+/overpassdata/
+/nominatedata/
+venv/
+/.idea/
+/segmentize/1-processed.csv

@@ -1,18 +1,40 @@
 version: "3"
 
 services:
+    overpass:
+        image: wiktorn/overpass-api
+        environment:
+            OVERPASS_META: 'yes'
+            OVERPASS_MODE: 'init'
+            OVERPASS_PLANET_URL: https://download.geofabrik.de/europe/kosovo-latest.osm.bz2
+        volumes:
+            - ./overpassdata:/db
+        ports:
+            - '8081:80'
+    postgres:
+        image: postgis/postgis
+        environment:
+          POSTGRES_PASSWORD: postgres
+        volumes:
+          - ./pgdata:/var/lib/postgresql/data
+        ports:
+          - "45678:5432"
+        restart: always
     nominatim:
         container_name: nominatim
         image: mediagis/nominatim:4.3
         ports:
             - "8080:8080"
+        networks:
+            - semaforat
         environment:
             # see https://github.com/mediagis/nominatim-docker/tree/master/4.3#configuration for more options
             PBF_URL: https://download.geofabrik.de/europe/kosovo-latest.osm.pbf
             NOMINATIM_PASSWORD: very_secure_password
         volumes:
-            - nominatim-data:/var/lib/postgresql/14/main
+            - ./nominatedata:/var/lib/postgresql/14/main
         shm_size: 1gb
-
-volumes:
-    nominatim-data:
+        restart: always
+networks:
+  semaforat:
+    driver: bridge

@@ -1,13 +1,21 @@
-This project uses Nominatim API to get address name from reverse geocoding API. On docker-compose there is PBF_URL defined for Kosovo data.
-if you start it for the first time, it would take around 10 to 20 minutes to import the data on postgres db. After that, there is a PHP web server exposed by default on port 8080 where you can actually make api requests.
+```
+[out:json];
+// The public street network
+way["highway"~"^(trunk|primary|secondary|tertiary|unclassified|residential)$"](42.6290946,21.1066198,42.6969650,21.2136267)->.streets;
 
-Copy 1.csv to this project folder, then
+// Get nodes that connect between three or more street segments
+node(way_link.streets:3-)->.connections;
 
-To run the project: 
-```sh
-docker-compose build
-docker-compose up
-pip install -r requirements.txt
-python3 preprocess.py  
-python3 process.py
+// Get intersections between distinct streets
+foreach .connections->.connection(
+  // Get adjacent streets
+  way(bn.connection);
+  // If the names don't all match, add the node to the set of intersections
+  if (u(t["name"]) == "< multiple values found >") {
+    (.connection; .intersections;)->.intersections;
+  }
+);
+
+.intersections out geom;
+
 ```

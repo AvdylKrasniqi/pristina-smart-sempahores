@@ -37,7 +37,7 @@ def getClosestSegmentByCoordsAndOsmId():
               ''' + mystr + '''
     ) as t(lat, lon, osm_id)
 )
-select distinct on (helper_lat, helper_lon, helper_osm_id)  helper_osm_id as osm_id, helper_lat as Latitude, helper_lon as Longitude, coalesce(start_intersection_id, -1) as start, coalesce(end_intersection_id, -1) as end, replace(road_name, ' ', '_') || '_' || coalesce(start_intersection_id, -1) || '_' || coalesce(end_intersection_id, -1) as full_road_name from (
+select distinct on (helper_lat, helper_lon, helper_osm_id)  helper_osm_id as osm_id, helper_lat as Latitude, helper_lon as Longitude, coalesce(start_intersection_id - 61943, -1) as start, coalesce(end_intersection_id, -1) as end, replace(road_name, ' ', '_') || '_' || coalesce(start_intersection_id - 61943, -1) || '_' || coalesce(end_intersection_id - 61943, -1) as full_road_name from (
 select helper.lat as helper_lat ,helper.lon as helper_lon, helper.osm_id as helper_osm_id, segments.*
 from segments inner join roads_segements on segments.id = roads_segements.segement_id
 inner join roads on roads_segements.road_id = roads.id
@@ -56,7 +56,7 @@ order by st_distance(st_setsrid(st_point(helper.lon, helper.lat), 4326), roads.g
 def getSingleSegmentRoads():
     global one_road_to_one_segment
     cursor = conn.cursor()
-    query = '''select roads.osm_id, coalesce(segments.start_intersection_id, -1) as start, coalesce(segments.end_intersection_id, -1) as end, replace(segments.road_name, ' ', '_') || '_' || coalesce(segments.start_intersection_id, -1) || '_' || coalesce(segments.end_intersection_id, -1) as full_road_name from segments inner join public.roads_segements rs on segments.id = rs.segement_id
+    query = '''select roads.osm_id, coalesce(segments.start_intersection_id - 61943, -1) as start, coalesce(segments.end_intersection_id - 61943, -1) as end, replace(segments.road_name, ' ', '_') || '_' || coalesce(segments.start_intersection_id - 61943, -1) || '_' || coalesce(segments.end_intersection_id - 61943, -1) as full_road_name from segments inner join public.roads_segements rs on segments.id = rs.segement_id
 inner join (
 select id from (select roads.id, count(roads.id)
 from roads inner join public.roads_segements rs on roads.id = rs.road_id

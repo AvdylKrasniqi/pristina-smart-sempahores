@@ -10,37 +10,50 @@ def convert_to_timedelta(time_str):
     return datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
 
 df['DeviceDateTime'] = df['DeviceDateTime'].apply(convert_to_timedelta)
-# df['DeviceDateTime'] = pd.to_timedelta(df['DeviceDateTime'])
 
-# Grouping by new_group_id and finding min/max times
-time_grouped = df.groupby('new_group_id').agg(
-    min_DeviceDateTime=('DeviceDateTime', 'min'),
-    max_DeviceDateTime=('DeviceDateTime', 'max')
-)
-# Calculating the time difference (duration) for each group
-time_grouped['duration'] = time_grouped['max_DeviceDateTime'] - time_grouped['min_DeviceDateTime']
-time_grouped['total_duration'] = time_grouped['duration'].apply(lambda x: x.total_seconds())
-# time_grouped = time_grouped.drop(columns=[('DeviceDateTime', 'min'), ('DeviceDateTime', 'max')])
-# time_grouped = time_grouped.reset_index(inplace=True)
-# print(time_grouped)
-df_merged = pd.merge(time_grouped, df, on='new_group_id', how='left')
+df['total_duration'] = df['DeviceDateTime'].shift(-1) - df['DeviceDateTime']
+df['total_duration'] = df['total_duration'].dt.total_seconds()
+df.at[df.index[-1], 'total_duration'] = 0
+average_time_per_group = df.groupby('new_group_id')['total_duration'].mean()
+
+average_time_per_group = average_time_per_group.reset_index()
+
+df.drop('total_duration', axis=1, inplace=True)
+
+df_merged = pd.merge(average_time_per_group, df, on='new_group_id', how='left')
+
+df_merged = df_merged.groupby(['new_group_id', 'full_road_name']).last()
+
+df_merged = df_merged.reset_index()
+# print(df_merged['total_duration'])
 #
 # print(df_merged)
 #
 #
-total_duration = df_merged['total_duration'].sum()
-unique_segments = df_merged['full_road_name'].nunique()
-unique_intersections = pd.concat([df_merged['start'], df_merged['end']]).nunique()
-nr_shtigjeve = df_merged['GroupID'].nunique()
 
-unique_segments_names = df_merged['full_road_name'].unique()
+filtered_df = df_merged[~(df_merged['start'] == -1) & ~(df_merged['end'] == -1)]
+total_duration = (int)(filtered_df['total_duration'].sum())
+unique_segments = filtered_df['full_road_name'].count()
+unique_intersections = unique_segments + 4
+nr_shtigjeve = filtered_df['GroupID'].nunique()
+
+unique_segments_names = filtered_df['full_road_name'].unique()
 
 
 print(f"{total_duration} {unique_intersections} {unique_segments} {nr_shtigjeve} 100")
-for index, row in df_merged.iterrows():
-    formatted_output = f"{row['start']} {row['end']} {row['full_road_name']} {row['total_duration']}"
+for index, row in filtered_df.iterrows():
+    # if not (row['start'] == -1 or row['end'] == -1):
+    formatted_output = f"{row['start']} {row['end']} {row['full_road_name']} {int(row['total_duration'])}"
     print(formatted_output)
 
-print(f"{unique_segments}", end=" ")
-for road in unique_segments_names:
-    print(road, end=" ")
+grouped_by_group_id = filtered_df.groupby('GroupID')
+
+# print(grouped_by_new_group_id)
+
+
+for group_name, group_data in grouped_by_group_id:
+    # if(group_data['full_road_name'].count() > 1):
+    print(f"{group_data['full_road_name'].count()}", end=" ")
+    for segment in group_data.iterrows():
+        print(segment[1]['full_road_name'], end=" ")
+    print("")

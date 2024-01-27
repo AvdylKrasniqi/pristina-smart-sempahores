@@ -1,8 +1,8 @@
-Assuming that you filled the DB using `main.py` on postprocess folder, you can do now the following steps to generate a new output for a given csv file 
+Assuming that you filled the DB using `main.py` on postprocess folder and you added other interections using `fillemptyintersections` from segmentize folder, you can do now the following steps to generate a new output for a given csv file 
 ```bash
  cd preprocess && python3 preprocess.py && python3 nodetoway.py && cd ../segmentize && python3 postprocess.py && python3 outputfaza2.py > 7.txt
 ```
-
+A helpful query for overpass that finds intersections.
 ```
 [out:json];
 // The public street network

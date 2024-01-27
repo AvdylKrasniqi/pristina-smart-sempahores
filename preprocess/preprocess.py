@@ -1,13 +1,29 @@
+from datetime import datetime
+
 import pandas as pd
 import requests
 from concurrent.futures import ThreadPoolExecutor
 
 # Replace this with the path to your CSV file
-csv_file_path = '7.csv'
+csv_file_path = '16.csv'
 
 # Read the CSV file
 df = pd.read_csv(csv_file_path)
 df = df.dropna(subset=['DeviceDateTime'])
+
+def convert_to_timedelta(time_str):
+    return datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
+
+df['DeviceDateTime'] = df['DeviceDateTime'].apply(convert_to_timedelta)
+df = df.sort_values(by='DeviceDateTime')
+
+df.reset_index()
+
+df['total_duration'] = df['DeviceDateTime'].shift(-1) - df['DeviceDateTime']
+
+df['total_duration'] = df['total_duration'].dt.total_seconds()
+df.at[df.index[-1], 'total_duration'] = 0
+
 
 df['Di2_Shifted'] = df['Di2'].shift(1).fillna(0).astype(int)
 print(df)
@@ -24,7 +40,7 @@ df.drop('Di2_Shifted', axis=1, inplace=True)
 
 print(df)
 
-df['Time'] = pd.to_datetime(df['DeviceDateTime'], format='%Y-%m-%d %H:%M:%S.%f')
+df['Time'] = df['DeviceDateTime']
 group_times = df.groupby('GroupID').agg({'Time': ['min', 'max']})
 
 group_times['Duration'] = (group_times['Time']['max'] - group_times['Time']['min']).dt.total_seconds()
@@ -33,11 +49,9 @@ valid_groups = group_times[group_times['Duration'] >= threshold_seconds].index
 
 df = df[df['GroupID'].isin(valid_groups)]
 
-
-
 df.drop('Time', axis=1, inplace=True)
 
-df.to_csv('7-grupet.csv', index=False)
+df.to_csv('16-grupet.csv', index=False)
 
 # Function to make an HTTP request and return the display name
 def fetch_display_name(lat, lon):
@@ -89,4 +103,4 @@ df['Display Name'] = df['Display Name'].apply(lambda x: x[0])
 print(df)
 
 # Optionally, save the updated DataFrame to a new CSV file
-df.to_csv('7-safe.csv', index=False)
+df.to_csv('16-safe.csv', index=False)

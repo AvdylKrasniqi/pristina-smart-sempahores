@@ -2,19 +2,25 @@ from datetime import datetime
 
 import pandas as pd
 
-csv_file_path = '7-processed.csv'
+csv_file_path = '16-processed.csv'
 df = pd.read_csv(csv_file_path)
 
 
-def convert_to_timedelta(time_str):
-    return datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
+# def convert_to_timedelta(time_str):
+#     return datetime.strptime(str(time_str), '%Y-%m-%d %H:%M:%S.%f')
 
-df['DeviceDateTime'] = df['DeviceDateTime'].apply(convert_to_timedelta)
+# df['DeviceDateTime'] = df['DeviceDateTime'].apply(convert_to_timedelta)
+# df = df.sort_values(by='DeviceDateTime')
 
-df['total_duration'] = df['DeviceDateTime'].shift(-1) - df['DeviceDateTime']
-df['total_duration'] = df['total_duration'].dt.total_seconds()
-df.at[df.index[-1], 'total_duration'] = 0
+# df['total_duration'] = df['DeviceDateTime'].shift(-1) - df['DeviceDateTime']
+# print(df['DeviceDateTime'].shift(-1))
+# print(df['DeviceDateTime'])
+
+# df['total_duration'] = df['total_duration'].dt.total_seconds()
+# df.at[df.index[-1], 'total_duration'] = 0
 average_time_per_group = df.groupby('new_group_id')['total_duration'].mean()
+
+# print(average_time_per_group)
 
 average_time_per_group = average_time_per_group.reset_index()
 
@@ -25,20 +31,14 @@ df_merged = pd.merge(average_time_per_group, df, on='new_group_id', how='left')
 df_merged = df_merged.groupby(['new_group_id', 'full_road_name']).last()
 
 df_merged = df_merged.reset_index()
-# print(df_merged['total_duration'])
-#
-# print(df_merged)
-#
-#
 
 filtered_df = df_merged[~(df_merged['start'] == -1) & ~(df_merged['end'] == -1)]
+
+# print(filtered_df)
 total_duration = (int)(filtered_df['total_duration'].sum())
 unique_segments = filtered_df['full_road_name'].count()
-unique_intersections = unique_segments + 4
+unique_intersections = pd.concat([filtered_df['start'], filtered_df['end']]).nunique()
 nr_shtigjeve = filtered_df['GroupID'].nunique()
-
-unique_segments_names = filtered_df['full_road_name'].unique()
-
 
 print(f"{total_duration} {unique_intersections} {unique_segments} {nr_shtigjeve} 100")
 for index, row in filtered_df.iterrows():

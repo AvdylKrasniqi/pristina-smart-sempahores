@@ -3,7 +3,7 @@ import psycopg2
 from psycopg2.extensions import AsIs
 
 
-csv_file_path = '../preprocess/7-final.csv'
+csv_file_path = '../preprocess/16-final.csv'
 df = pd.read_csv(csv_file_path)
 
 
@@ -37,12 +37,16 @@ def getClosestSegmentByCoordsAndOsmId():
               ''' + mystr + '''
     ) as t(lat, lon, osm_id)
 )
-select distinct on (helper_lat, helper_lon, helper_osm_id)  helper_osm_id as osm_id, helper_lat as Latitude, helper_lon as Longitude, coalesce(start_intersection_id - 61943, -1) as start, coalesce(end_intersection_id, -1) as end, replace(road_name, ' ', '_') || '_' || coalesce(start_intersection_id - 61943, -1) || '_' || coalesce(end_intersection_id - 61943, -1) as full_road_name from (
+select osm_id, Latitude, Longitude, start, ending as en , full_road_name || '_' || start || '_' || ending as full_road_name from (
+select distinct on (helper_lat, helper_lon, helper_osm_id)  helper_osm_id as osm_id, helper_lat as Latitude, helper_lon as Longitude,
+       replace(st_x(st_startpoint(geom))::numeric(10,6) || '' || st_y(st_startpoint(geom))::numeric(10,6), '.', '')   as start,
+       replace(st_x(st_endpoint(geom))::numeric(10,6) || '' || st_y(st_endpoint(geom))::numeric(10,6), '.', '')   as ending,
+        replace(road_name, ' ', '_') as full_road_name from (
 select helper.lat as helper_lat ,helper.lon as helper_lon, helper.osm_id as helper_osm_id, segments.*
 from segments inner join roads_segements on segments.id = roads_segements.segement_id
 inner join roads on roads_segements.road_id = roads.id
 inner join helper on cast(roads.osm_id as varchar) = cast(helper.osm_id as varchar)
-order by st_distance(st_setsrid(st_point(helper.lon, helper.lat), 4326), roads.geom) asc) a;'''
+order by st_distance(st_setsrid(st_point(helper.lon, helper.lat), 4326), roads.geom) asc) a) b;'''
     try:
         cursor.execute(query)
         one_road_to_multiple_segment = pd.DataFrame(cursor.fetchall(), columns=['osm_id', 'Latitude', 'Longitude', 'start', 'end', 'full_road_name'])
@@ -56,12 +60,17 @@ order by st_distance(st_setsrid(st_point(helper.lon, helper.lat), 4326), roads.g
 def getSingleSegmentRoads():
     global one_road_to_one_segment
     cursor = conn.cursor()
-    query = '''select roads.osm_id, coalesce(segments.start_intersection_id - 61943, -1) as start, coalesce(segments.end_intersection_id - 61943, -1) as end, replace(segments.road_name, ' ', '_') || '_' || coalesce(segments.start_intersection_id - 61943, -1) || '_' || coalesce(segments.end_intersection_id - 61943, -1) as full_road_name from segments inner join public.roads_segements rs on segments.id = rs.segement_id
+    query = '''select osm_id, start, ending as end, full_road_name || '_' || start || '_' || ending as full_road_name from (
+select roads.osm_id,
+       replace(st_x(st_startpoint(segments.geom))::numeric(10,6) || '' || st_y(st_startpoint(segments.geom))::numeric(10,6), '.', '')   as start,
+       replace(st_x(st_endpoint(segments.geom))::numeric(10,6) || '' || st_y(st_endpoint(segments.geom))::numeric(10,6), '.', '')   as ending,
+--        cast(st_x(st_endpoint(segments.geom)) as varchar) || cast(st_y(st_endpoint(segments.geom)) as varchar) as end,
+       replace(segments.road_name, ' ', '_') as full_road_name from segments inner join public.roads_segements rs on segments.id = rs.segement_id
 inner join (
 select id from (select roads.id, count(roads.id)
 from roads inner join public.roads_segements rs on roads.id = rs.road_id
 group by roads.id) where count = 1) a on rs.road_id = a.id
-inner join roads on a.id = roads.id;'''
+inner join roads on a.id = roads.id) A;'''
     try:
         cursor.execute(query)
         one_road_to_one_segment = pd.DataFrame(cursor.fetchall(), columns=['osm_id', 'start', 'end', 'full_road_name'])
@@ -72,8 +81,8 @@ inner join roads on a.id = roads.id;'''
 
 getSingleSegmentRoads()
 
-# print(df)
-# print(one_road_to_one_segment)
+print(df)
+print(one_road_to_one_segment)
 df['osm_id'] = df['osm_id'].astype(str)
 one_road_to_one_segment['osm_id'] = one_road_to_one_segment['osm_id'].astype(str)
 
@@ -104,4 +113,6 @@ concat['end'] = concat['end'].astype(int)
 
 concat['new_group_id'] = (concat['full_road_name'] != concat['full_road_name'].shift()).cumsum()
 
-concat.to_csv('7-processed.csv', index=False)
+concat = concat.sort_index()
+
+concat.to_csv('16-processed.csv', index=False)

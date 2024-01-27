@@ -16,7 +16,8 @@ foreach .connections->.connection(
   // Get adjacent streets
   way(bn.connection);
   // If the names don't all match, add the node to the set of intersections
-  if (u(t["name"]) == "< multiple values found >") {
+  if (u(t["name"]) == "<
+ multiple values found >") {
     (.connection; .intersections;)->.intersections;
   }
 );

@@ -50,7 +50,7 @@ df['Time'] = df['DeviceDateTime']
 
 df.drop('Time', axis=1, inplace=True)
 
-df.to_csv('16-grupet.csv', index=False)
+#df.to_csv('16-grupet.csv', index=False)
 
 # Function to make an HTTP request and return the display name
 def fetch_display_name(lat, lon):
@@ -101,7 +101,10 @@ df['Display Name'] = display_names
 df['osm_id'] = df['Display Name'].apply(lambda x: x[1])
 df['osm_type'] = df['Display Name'].apply(lambda x: x[2])
 df['Display Name'] = df['Display Name'].apply(lambda x: x[0])
-df = df[~df['Display Name'] == 'NotAvailableRoad']
+
+df.to_csv('16-before-safe.csv', index=False)
+
+df = df[df['Display Name'] != 'NotAvailableRoad']
 
 # Now the DataFrame has an additional column with display names
 print(df)

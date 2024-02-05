@@ -35,19 +35,18 @@ df.loc[df['Di2'] == 0, 'GroupID'] = None
 # Drop the extra column used for calculation
 df.drop('Di2_Shifted', axis=1, inplace=True)
 
-
-# df = df.loc[(df['Di1'] == 1) & (df['Di2'] == 1)]
+df = df.loc[(df['Di1'] == 1) & (df['Di2'] == 1)]
 
 print(df)
 
 df['Time'] = df['DeviceDateTime']
-group_times = df.groupby('GroupID').agg({'Time': ['min', 'max']})
+# group_times = df.groupby('GroupID').agg({'Time': ['min', 'max']})
+#
+# group_times['Duration'] = (group_times['Time']['max'] - group_times['Time']['min']).dt.total_seconds()
+# threshold_seconds = 60
+# valid_groups = group_times[group_times['Duration'] >= threshold_seconds].index
 
-group_times['Duration'] = (group_times['Time']['max'] - group_times['Time']['min']).dt.total_seconds()
-threshold_seconds = 60
-valid_groups = group_times[group_times['Duration'] >= threshold_seconds].index
-
-df = df[df['GroupID'].isin(valid_groups)]
+# df = df[df['GroupID'].isin(valid_groups)]
 
 df.drop('Time', axis=1, inplace=True)
 
@@ -58,6 +57,9 @@ def fetch_display_name(lat, lon):
     try:
         print(f"http://localhost:8080/reverse?lat={lat}&lon={lon}&format=json&osm_type=W&layer=address&zoom=17&addressdetails=1")
         response = requests.get(f"http://localhost:8080/reverse?lat={lat}&lon={lon}&format=json").json()
+        if "error" in response:
+            print(response['error'])
+            return ['NotAvailableRoad', '', '']
         if "address" not in response:
             return [response['display_name'], response['osm_id'], response['osm_type']]
         elif "road" in response['address']:
@@ -78,7 +80,8 @@ def fetch_display_name(lat, lon):
             return [response['display_name'], response['osm_id'], response['osm_type']]
     except Exception as e:
         print(f"Error fetching data for lat: {lat}, lon: {lon} - {e}")
-        return None
+        return ['NotAvailableRoad', '', '']
+
 
 # Function to handle each row
 def process_row(row):
@@ -98,6 +101,7 @@ df['Display Name'] = display_names
 df['osm_id'] = df['Display Name'].apply(lambda x: x[1])
 df['osm_type'] = df['Display Name'].apply(lambda x: x[2])
 df['Display Name'] = df['Display Name'].apply(lambda x: x[0])
+df = df[~df['Display Name'] == 'NotAvailableRoad']
 
 # Now the DataFrame has an additional column with display names
 print(df)

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 import os
 
@@ -10,19 +12,33 @@ dfs_0900_1100 = []
 dfs_1100_1500 = []
 dfs_1500_1800 = []
 
+
+
+def convert_to_timedelta(time_str):
+    return datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
+
+
 # Function to filter dataframe based on time range
 def filter_by_time(df, start_hour, start_minute, end_hour, end_minute):
-    return df[((df['DeviceDateTime'].dt.hour > start_hour) |
+    df = df.dropna(subset=['DeviceDateTime'])
+
+    df = df[((df['DeviceDateTime'].dt.hour > start_hour) |
               ((df['DeviceDateTime'].dt.hour == start_hour) & (df['DeviceDateTime'].dt.minute >= start_minute))) &
               ((df['DeviceDateTime'].dt.hour < end_hour) |
               ((df['DeviceDateTime'].dt.hour == end_hour) & (df['DeviceDateTime'].dt.minute < end_minute)))]
+
+    # df['DeviceDateTime'] = df['DeviceDateTime'].apply(convert_to_timedelta)
+    df = df.sort_values(by='DeviceDateTime')
+    df.reset_index()
+
+    return df
 
 # Loop through each file in the directory
 for filename in os.listdir(directory):
     if filename.endswith('.csv'):
         file_path = os.path.join(directory, filename)
         df = pd.read_csv(file_path, parse_dates=['DeviceDateTime'])
-
+        df['filename'] = filename
         # Apply filters and append to respective lists
         dfs_0730_0900.append(filter_by_time(df, 7, 30, 9, 0))
         dfs_0900_1100.append(filter_by_time(df, 9, 0, 11, 0))
@@ -34,6 +50,7 @@ df_0730_0900 = pd.concat(dfs_0730_0900)
 df_0900_1100 = pd.concat(dfs_0900_1100)
 df_1100_1500 = pd.concat(dfs_1100_1500)
 df_1500_1800 = pd.concat(dfs_1500_1800)
+
 
 # Optional: Save each dataframe to a new CSV file
 df_0730_0900.to_csv('0730_0900.csv', index=False)

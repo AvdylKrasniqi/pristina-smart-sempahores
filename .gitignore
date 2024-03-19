@@ -6,3 +6,4 @@
 venv/
 /.idea/
 /segmentize/1-processed.csv
+/archive

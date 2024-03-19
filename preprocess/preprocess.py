@@ -5,7 +5,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 # Replace this with the path to your CSV file
-csv_file_path = '16.csv'
+csv_file_path = '1500_1800.csv'
 
 # Read the CSV file
 df = pd.read_csv(csv_file_path)
@@ -102,7 +102,7 @@ df['osm_id'] = df['Display Name'].apply(lambda x: x[1])
 df['osm_type'] = df['Display Name'].apply(lambda x: x[2])
 df['Display Name'] = df['Display Name'].apply(lambda x: x[0])
 
-df.to_csv('16-before-safe.csv', index=False)
+df.to_csv('1500_1800-before-safe.csv', index=False)
 
 df = df[df['Display Name'] != 'NotAvailableRoad']
 
@@ -110,4 +110,4 @@ df = df[df['Display Name'] != 'NotAvailableRoad']
 print(df)
 
 # Optionally, save the updated DataFrame to a new CSV file
-df.to_csv('16-safe.csv', index=False)
+df.to_csv('1500_1800-safe.csv', index=False)

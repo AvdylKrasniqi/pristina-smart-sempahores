@@ -6,7 +6,7 @@ from psycopg2 import extras
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
-df = pd.read_csv('0730_0900.csv', parse_dates=['DeviceDateTime'])
+df = pd.read_csv('14.csv', parse_dates=['DeviceDateTime'])
 
 
 
@@ -95,6 +95,7 @@ def getClosestSegment():
     select distinct on (id) id as temp_id, full_road_name, starting as start, ending as end, distance
     from closest_segment;'''
 
+        print(query)
         # Initialize cursor and execute the query for the current chunk
         with conn.cursor() as cursor:
             try:
@@ -186,4 +187,4 @@ dbresult['temp_id'] = dbresult['temp_id'].astype(int)
 result = df.merge(dbresult, how='inner', on='temp_id')
 print(result)
 
-result.to_csv('0730_0900-tryfromdb.csv', index=False)
+result.to_csv('14-output.csv', index=False)
